@@ -140,6 +140,12 @@ export class BoardsController {
       ): Board {
         return this.boardsSerivce.createBoard(createdBoardDto)
       }
+
+      //ParseIntPipe사용
+      @Delete('/:id')
+      async deleteBoard(@Param('id', ParseIntPipe) id): Promise<void> {
+        return this.boardService.deleteBoard(id)
+      }
       ```
       
       ```js
@@ -185,6 +191,32 @@ export class BoardsController {
 ### Repository
     - 엔티티 개체와 함께 작동하며 찾기 삽입 업데이트 삭제 등을 처리
     - 데이터베이스 관련된 일을 Repository에서 처리 (Service X)
+
+### remove() vs delete()?
+
+ - remove : 무조건 존재하는 아이템을 remove 메소드를 이용해서 지워야함 그러지않으면 Error
+ - delete : 만약 아이템이 존재하면 지우고 존재하지 않으면 아무런 영향이 없음
+
+ - remove를 이용하면 하나의 아이템을 지울때 두번 데이터베이스 호출?이용? 하기때문에 
+   1번만 작업이 필요한 delete 이용 remove를 사용해야 될때는 remove 이용할것
+
+### 중복체크 방법
+  1. entity에서 원하는 필드를 유니크로 지정/ 같은 이름을 가진 유저가 있다면 에러뱉음
+  1. repository에서 쿼리 2번으로 확인
+  ```JS
+    @Entity()
+    //배열로 들어가기 때문에 여러개의 값 선언 가능
+    @Unique(['username'])
+    export class User extends BaseEntity {
+      ...
+    }
+    //이렇게 하면 아래와 같이 나옴 원하는 message로 변경 가능
+    /* 
+      statusCode : 500
+      message : Error Internal server error
+    */
+  ```
+
 
 
 

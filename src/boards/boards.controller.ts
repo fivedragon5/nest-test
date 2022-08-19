@@ -1,20 +1,40 @@
-import { Body, Controller, Delete, Get, NotFoundException, Param, Patch, Post, UsePipes, ValidationPipe } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UsePipes, ValidationPipe } from '@nestjs/common'
 import { BoardsService } from './boards.service'
 import { BoardStatus } from './board.status.enum'
 import { CreateBoardDto } from './dto/create-board.dto'
 import { BoardStatusValidationPipe } from './pipes/board-status-validation.pipe'
-import { NotFoundError } from 'rxjs'
+import { Board } from './board.entity'
 
 @Controller('boards')
 export class BoardsController {
   constructor(private boardService: BoardsService) {}
 
+  @Get()
+  getAllBoard(): Promise<Board[]> {
+    return this.boardService.getAllBoards()
+  }
+
   @Get('/:id')
-  async getBoardId(@Param('id')id: number) {
-    const found = await this.boardService.findOne(id)
+  getBoardId(@Param('id')id: number): Promise<Board> {
+    return this.boardService.getBoardByid(id)
+  }
 
-    if(!found) throw new NotFoundException(`Can't not find Board id : ${id}`)
+  @Post()
+  @UsePipes(ValidationPipe)
+  async createBoard(@Body() createBoardDto: CreateBoardDto): Promise<Board> {
+    return await this.boardService.createBoard(createBoardDto)
+  }
 
-    return found
+  @Delete('/:id')
+  async deleteBoard(@Param('id', ParseIntPipe) id): Promise<void> {
+    return this.boardService.deleteBoard(id)
+  }
+
+  @Patch('/:id/status')
+  updateBoardStatus(
+    @Param('id') id: number,
+    @Body('status', BoardStatusValidationPipe) status: BoardStatus
+  ) {
+    return this.boardService.updateBoardStatus(id, status)
   }
 }
